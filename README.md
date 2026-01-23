@@ -1,7 +1,7 @@
 # Counter-Strike: Source Server (Docker)
 
 This repository provides a Dockerized **Counter-Strike: Source** game server suitable for running a CS:S server in a clean, reproducible way.  
-The image is designed for **headless operation**, automatically downloads and updates the game server via SteamCMD, supports file overlaying using overlayfs, and includes optional SourceMod/MetaMod support.
+The image is designed for **headless operation**, automatically downloads and updates the game server via SteamCMD, supports file overlaying using OverlayFS, and includes optional SourceMod/MetaMod support.
 
 ---
 
@@ -10,9 +10,7 @@ The image is designed for **headless operation**, automatically downloads and up
 - Counter-Strike: Source game server support
 - Automatically downloads and updates the game server via SteamCMD
 - Optional SourceMod/MetaMod installation and management
-- Supports file overlaying using overlayfs (no file copying required)
-- Pre-execution script support (`/config/autoexec.sh`)
-- Non-root runtime using `gosu`
+- Supports file overlaying using OverlayFS (no file copying required)
 - Configurable automatic updates
 
 ## Docker Compose Example
@@ -55,9 +53,9 @@ services:
 ```text
 .
 └── config/
-    ├── game/              # Game files downloaded by SteamCMD (auto-created)
+    ├── Server/            # Game files downloaded by SteamCMD (auto-created)
     │   └── cstrike/       # Counter-Strike: Source game directory
-    ├── overlay/           # Files to overlay on game directory (optional)
+    ├── Overlay/           # Files to overlay on game directory (optional)
     │   └── cstrike/       # Counter-Strike: Source overlay directory
     │       ├── addons/    # SourceMod/MetaMod installation location
     │       │   ├── sourcemod/
@@ -68,55 +66,47 @@ services:
     │       ├── maps/      # Custom maps
     │       ├── cfg/       # Server configuration files (server.cfg, etc.)
     │       └── ...        # Any other files you want to overlay
-    ├── merged/            # Overlayfs merged view (auto-created, if overlayfs enabled)
+    ├── Merged/            # Overlayfs merged view (auto-created, if overlayfs enabled)
     ├── .overlay-work/     # Overlayfs work directory (auto-created)
-    ├── autoexec.sh        # Optional: Script executed before SteamCMD update
+    ├── Scripts/
+    │   └── Hooks/         # Script files in this directory get automatically executed if registered to a hook
     └── ...                # Your game server configuration files
 ```
 
-The `config` directory **must be writable** by Docker. The `game` directory is automatically created and populated by SteamCMD on first startup.
+The `config` directory **must be writable** by Docker. The `Server` directory is automatically created and populated by SteamCMD on first startup.
 
 ---
 
 ## Configuration
 
-### Pre-Execution Script
+### Custom Scripts
 
-You can create a script at `/config/autoexec.sh` that will be executed **before** SteamCMD runs. This is useful for:
+You can create custom scripts in the `/config/Scripts/Hooks/{HookName}` directory to execute at various points in the container's startup. This is useful for:
 - Installing additional dependencies
 - Setting up environment variables
 - Downloading additional files
 - Modifying configuration before the game server starts
 
-Example `config/autoexec.sh`:
-```bash
-#!/usr/bin/env bash
-echo "Running pre-execution setup..."
-# Download custom files, set environment variables, etc.
-export MY_CUSTOM_VAR="value"
-```
-
-The script will be made executable automatically if it's not already.
+All scripts should be PowerShell scripts.
 
 ### File Overlaying
 
-The overlay directory (`/config/overlay`) allows you to overlay files on top of the game directory without copying files. This is useful for:
+The overlay directory (`/config/Overlay`) allows you to overlay files on top of the game directory without copying files. This is useful for:
 - Replacing game files (maps, scripts, assets)
 - Adding custom content
 - Modifying game files without touching the base installation
 
 **How it works:**
-- Files in `/config/overlay` will appear in the merged view at `/config/merged`
-- If a file exists in both `/config/game` and `/config/overlay`, the version in `/config/overlay` takes precedence
-- The game server runs from the merged directory when overlayfs is active
+- Files in `/config/Overlay` will appear in the merged view at `/config/Merged`
+- If a file exists in both `/config/Server` and `/config/Overlay`, the version in `/config/Overlay` takes precedence
+- The game server runs from the merged directory
 
 **Requirements:**
 - Container must run with `--cap-add SYS_ADMIN` or `--privileged` flag
-- If overlayfs cannot be mounted, the container falls back to using the game directory directly
 
 **Example overlay structure:**
 ```text
-config/overlay/
+/config/Overlay/
 ├── maps/
 │   └── custom_map.bsp
 ├── scripts/
@@ -143,14 +133,14 @@ environment:
 When enabled, the container will automatically:
 - Install MetaMod:Source (required dependency for SourceMod)
 - Install SourceMod
-- Place all files in the overlay directory (`/config/overlay/cstrike/addons/`)
+- Place all files in the overlay directory (`/config/Overlay/cstrike/addons/`)
 
 ### Installing Plugins
 
 Once SourceMod is installed, you can add custom plugins by placing `.smx` files in:
 
 ```
-config/overlay/cstrike/addons/sourcemod/plugins/
+/config/Overlay/cstrike/addons/sourcemod/plugins/
 ```
 
 **Example:**
@@ -181,7 +171,7 @@ This will install a curated set of common SourceMod plugins. Note that SourceMod
 SourceMod configuration files should be placed in:
 
 ```
-config/overlay/cstrike/addons/sourcemod/configs/
+/config/Overlay/cstrike/addons/sourcemod/configs/
 ```
 
 Common configuration files:
@@ -288,29 +278,29 @@ docker run --rm -it \
 
 ---
 
-## Overlayfs Details
+## OverlayFS Details
 
-The container uses Linux overlayfs to merge the game directory (`/config/game`) with the overlay directory (`/config/overlay`) into a merged view (`/config/merged`). This allows you to:
+The container uses Linux OverlayFS to merge the server directory (`/config/Server`) with the overlay directory (`/config/Overlay`) into a merged view (`/config/Merged`). This allows you to:
 
 1. **Replace files** without modifying the base game installation
 2. **Add files** that don't exist in the base game
-3. **Avoid copying** large files - overlayfs is a union filesystem
+3. **Avoid copying** large files - OverlayFS is a union filesystem
 
 **Technical details:**
-- **Lower layer**: `/config/game` (base game files from SteamCMD)
-- **Upper layer**: `/config/overlay` (your custom files)
-- **Merged view**: `/config/merged` (where the game server runs from)
-- **Work directory**: `/config/.overlay-work` (required by overlayfs)
+- **Lower layer**: `/config/Server` (base game files from SteamCMD)
+- **Upper layer**: `/config/Overlay` (your custom files)
+- **Merged view**: `/config/Merged` (where the game server runs from)
+- **Work directory**: `/config/.overlay-work` (required by OverlayFS)
 
-If overlayfs cannot be mounted (e.g., missing privileges), the container will fall back to using `/config/game` directly and log a warning.
+If OverlayFS cannot be mounted (e.g., missing privileges), the container will fall back to using `/config/Server` directly and log a warning.
 
 ---
 
 ## Troubleshooting
 
-### Overlayfs not working
+### OverlayFS not working
 
-If you see warnings about overlayfs, ensure your container has the required privileges:
+If you see warnings about OverlayFS, ensure your container has the required privileges:
 
 ```bash
 # Option 1: Add SYS_ADMIN capability (recommended)
@@ -324,20 +314,20 @@ docker run --privileged ...
 
 1. Verify `STEAMCMD_ARGS` contains the correct command for Counter-Strike: Source
 2. Check container logs: `docker logs <container-name>`
-3. Ensure the game directory was downloaded: check `/config/game/cstrike` in the container
+3. Ensure the server directory was downloaded: check `/config/Server/cstrike` in the container
 4. Verify the server configuration files are correct (e.g., `server.cfg`)
 
 ### SourceMod not loading
 
 1. Ensure `INSTALL_SOURCEMOD` is set to `"true"` (not just `true` without quotes in YAML)
-2. Check that SourceMod was installed: verify `/config/overlay/cstrike/addons/sourcemod` exists
+2. Check that SourceMod was installed: verify `/config/Overlay/cstrike/addons/sourcemod` exists
 3. Check server console logs for SourceMod loading messages
-4. Verify MetaMod is installed: check for `/config/overlay/cstrike/addons/metamod.vdf`
+4. Verify MetaMod is installed: check for `/config/Overlay/cstrike/addons/metamod.vdf`
 5. Ensure plugins are compiled `.smx` files (not `.sp` source files)
 
 ### Permission errors
 
-The container runs as a non-root user (`steamcmd`, UID 10001). If you encounter permission errors:
+The container runs as a non-root user (`lancommander`, UID 1337). If you encounter permission errors:
 
 1. Ensure mounted volumes are writable
 2. Check file ownership in the container
