@@ -11,9 +11,13 @@ ENV SOURCEMOD_VERSION="1.12.0-git7221"
 ENV GAME_MOD="cstrike"
 ENV METAMOD_MAJOR_VERSION="1.12"
 ENV METAMOD_VERSION="1.12.0-git1219"
+ENV HTTP_FILESERVER_ENABLED="true"
+ENV HTTP_FILESERVER_WEB_ROOT="/config/Merged/cstrike"
+ENV HTTP_FILESERVER_FILE_PATTERN="^/(maps|materials|models|sound)/.*\.(bz2|ztmp|bsp|nav|res|mdl|vvd|vtx|phy|ani|vmt|vtf|wav|mp3)$"
 
 EXPOSE 27015/udp
 EXPOSE 27020/udp
+EXPOSE 80/tcp
 
 # COPY Modules/ "${BASE_MODULES}/"
 COPY Hooks/ "${BASE_HOOKS}/"
