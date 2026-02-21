@@ -20,7 +20,7 @@ services:
 
     environment:
       STEAM_APP_UPDATE: "true"
-      START_CMD: "./srcds_run -game cstrike -console +map de_dust2"
+      START_ARGS: "-game cstrike -console +map de_dust2"
       INSTALL_SOURCEMOD: "true"
 
     cap_add:
@@ -77,7 +77,7 @@ The host path can be:
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `STEAM_APP_UPDATE` | Enable automatic game updates on startup (`"true"`/`"false"`) | `"true"` | No |
-| `START_CMD` | Command to start the game server | `"./srcds_run -game cstrike -console +map de_dust2"` | No |
+| `START_ARGS` | Arguments used to start the game server | `"-game cstrike -console +map de_dust2"` | No |
 | `INSTALL_SOURCEMOD` | Enable SourceMod/MetaMod installation (`"true"`/`"false"`) | `"false"` | No |
 | `SOURCEMOD_VERSION` | SourceMod version to install | `"1.12.0-git7221"` | No |
 | `METAMOD_VERSION` | MetaMod version to install | `"1.12.0-git1219"` | No |
@@ -96,30 +96,30 @@ environment:
   STEAM_APP_UPDATE: "true"
 ```
 
-#### `START_CMD`
+#### `START_ARGS`
 
-The command executed to start the Counter-Strike: Source server. This should be the full command line including all server parameters.
+Arguments passed to the game server executable at startup.
 
 **Default:**
 ```yaml
-START_CMD: "./srcds_run -game cstrike -console +map de_dust2"
+START_ARGS: "-game cstrike -console +map de_dust2"
 ```
 
 **Customization Examples:**
 
 Basic server with custom map:
 ```yaml
-START_CMD: "./srcds_run -game cstrike -console +map de_dust2"
+START_ARGS: "-game cstrike -console +map de_dust2"
 ```
 
 Server with max players and public IP:
 ```yaml
-START_CMD: "./srcds_run -game cstrike -console +map de_dust2 +maxplayers 24 +sv_lan 0 +ip 0.0.0.0"
+START_ARGS: "-game cstrike -console +map de_dust2 +maxplayers 24 +sv_lan 0 +ip 0.0.0.0"
 ```
 
 Server with RCON password:
 ```yaml
-START_CMD: "./srcds_run -game cstrike -console +map de_dust2 +rcon_password mypassword"
+START_ARGS: "-game cstrike -console +map de_dust2 +rcon_password mypassword"
 ```
 
 **Common Server Parameters:**
@@ -307,10 +307,10 @@ If OverlayFS cannot be mounted (e.g., missing privileges), the container will fa
 
 ### Game Server Not Starting
 
-1. **Verify START_CMD:**
-   Check that `START_CMD` contains a valid server command:
+1. **Verify START_ARGS:**
+   Check that `START_ARGS` contains valid server arguments:
    ```yaml
-   START_CMD: "./srcds_run -game cstrike -console +map de_dust2"
+   START_ARGS: "-game cstrike -console +map de_dust2"
    ```
 
 2. **Check server directory:**
@@ -446,7 +446,7 @@ To run multiple Counter-Strike: Source servers on the same host:
 4. **Use different maps/names:**
    ```yaml
    environment:
-     START_CMD: "./srcds_run -game cstrike -console +map cs_office +hostname 'Server 1'"
+     START_ARGS: "-game cstrike -console +map cs_office +hostname 'Server 1'"
    ```
 
 ## Additional Resources

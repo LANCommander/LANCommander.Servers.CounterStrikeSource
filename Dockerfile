@@ -16,6 +16,20 @@ ENV HTTP_FILESERVER_ENABLED="true"
 ENV HTTP_FILESERVER_WEB_ROOT="/config/Merged/cstrike"
 ENV HTTP_FILESERVER_FILE_PATTERN="^/(maps|materials|models|sound)/.*\.(bz2|ztmp|bsp|nav|res|mdl|vvd|vtx|phy|ani|vmt|vtf|wav|mp3)$"
 
+# ----------------------------
+# Dependencies
+# ----------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    bzip2 \
+    tar \
+    unzip \
+    xz-utils \
+    p7zip-full \
+    gosu \
+  && rm -rf /var/lib/apt/lists/*
+
 EXPOSE 27015/udp
 EXPOSE 27020/udp
 EXPOSE 80/tcp

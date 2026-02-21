@@ -32,7 +32,7 @@ services:
 
     environment:
       STEAM_APP_UPDATE: "true"               # Enable automatic updates
-      STEAMCMD_ARGS: "./srcds_run -game cstrike -console +map de_dust2"
+      START_ARGS: "-game cstrike -console +map de_dust2"
       INSTALL_SOURCEMOD: "true"              # Enable SourceMod installation
       INSTALL_SOURCEMOD_DEFAULT_PLUGINS: "false"  # Optional: install default plugins
 
@@ -184,7 +184,7 @@ Common configuration files:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `STEAM_APP_UPDATE` | Enable automatic game updates on startup (`true`/`false`) | `true` |
-| `STEAMCMD_ARGS` | Command to run the game server | `"./srcds_run -game cstrike -console +map de_dust2"` |
+| `START_ARGS` | Arguments used to start the game server | `"-game cstrike -console +map de_dust2"` |
 | `INSTALL_SOURCEMOD` | Enable SourceMod/MetaMod installation (`true`/`false`) | `false` |
 | `INSTALL_SOURCEMOD_DEFAULT_PLUGINS` | Install default plugin pack (`true`/`false`) | `false` |
 | `SOURCEMOD_VERSION` | SourceMod version to install | `1.12.0-git7221` |
@@ -194,18 +194,18 @@ Common configuration files:
 
 Set to `false` or `0` to disable automatic updates. When disabled, SteamCMD will not run on container startup.
 
-### `STEAMCMD_ARGS`
+### `START_ARGS`
 
-The command to start the Counter-Strike: Source server. Default example:
+Arguments passed to the game server executable at startup. Default example:
 
 ```bash
-STEAMCMD_ARGS="./srcds_run -game cstrike -console +map de_dust2"
+START_ARGS="-game cstrike -console +map de_dust2"
 ```
 
 You can customize this with additional server parameters:
 
 ```bash
-STEAMCMD_ARGS="./srcds_run -game cstrike -console +map de_dust2 +maxplayers 24 +sv_lan 0"
+START_ARGS="-game cstrike -console +map de_dust2 +maxplayers 24 +sv_lan 0"
 ```
 
 ---
@@ -221,7 +221,7 @@ docker run --rm -it \
   --cap-add SYS_ADMIN \
   -p 27015:27015/udp \
   -v "./config:/config" \
-  -e STEAMCMD_ARGS="./srcds_run -game cstrike -console +map de_dust2" \
+  -e START_ARGS="-game cstrike -console +map de_dust2" \
   lancommander/counterstrikesource:latest
 ```
 
@@ -233,7 +233,7 @@ docker run --rm -it \
   -p 27015:27015/udp \
   -v "$(pwd)/config:/config" \
   -e STEAM_APP_UPDATE="true" \
-  -e STEAMCMD_ARGS="./srcds_run -game cstrike -console +map de_dust2 +maxplayers 24" \
+  -e START_ARGS="-game cstrike -console +map de_dust2 +maxplayers 24" \
   -e INSTALL_SOURCEMOD="true" \
   lancommander/counterstrikesource:latest
 ```
@@ -246,7 +246,7 @@ docker run --rm -it \
   -p 27015:27015/udp \
   -v "$(pwd)/config:/config" \
   -e STEAM_APP_UPDATE="true" \
-  -e STEAMCMD_ARGS="./srcds_run -game cstrike -console +map de_dust2 +maxplayers 24" \
+  -e START_ARGS="-game cstrike -console +map de_dust2 +maxplayers 24" \
   -e INSTALL_SOURCEMOD="true" \
   lancommander/counterstrikesource:latest
 ```
@@ -259,13 +259,13 @@ docker run --rm -it \
   -p 27015:27015/udp \
   -v "$(pwd)/config:/config" \
   -e STEAM_APP_UPDATE="false" \
-  -e STEAMCMD_ARGS="./srcds_run -game cstrike -console +map de_dust2" \
+  -e START_ARGS="-game cstrike -console +map de_dust2" \
   lancommander/counterstrikesource:latest
 ```
 
-### Using command arguments instead of STEAMCMD_ARGS
+### Using command arguments instead of START_ARGS
 
-You can also pass the server command as arguments to the container:
+You can also pass the server arguments directly to the container:
 
 ```bash
 docker run --rm -it \
@@ -312,7 +312,7 @@ docker run --privileged ...
 
 ### Game server not starting
 
-1. Verify `STEAMCMD_ARGS` contains the correct command for Counter-Strike: Source
+1. Verify `START_ARGS` contains the correct arguments for Counter-Strike: Source
 2. Check container logs: `docker logs <container-name>`
 3. Ensure the server directory was downloaded: check `/config/Server/cstrike` in the container
 4. Verify the server configuration files are correct (e.g., `server.cfg`)
