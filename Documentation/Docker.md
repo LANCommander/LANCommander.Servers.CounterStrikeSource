@@ -267,6 +267,37 @@ maxplayers 24
 rcon_password "your_rcon_password"
 ```
 
+## Match Statistics
+
+The server can report the matches played on it to LANCommander, with the
+[LANCommander match statistics plugin](https://github.com/LANCommander/LANCommander.MatchStatistics.SourceMod).
+The plugin is built into the image and needs SourceMod (`INSTALL_SOURCEMOD`). It is turned on when
+`MATCH_STATS_SERVER_URL` and `MATCH_STATS_TOKEN` are set, and is then copied into `cstrike/addons/sourcemod/` on every
+start. The core plugin loads the Counter-Strike: Source module itself. Turned off, the plugin's files are removed again.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MATCH_STATS_ENABLED` | `auto`: on when `MATCH_STATS_SERVER_URL` and `MATCH_STATS_TOKEN` are set. `true` or `false` | `auto` |
+| `MATCH_STATS_SERVER_URL` | The LANCommander server, e.g. `http://lancommander.lan:1337`. Only `http://` works on Linux | *(empty)* |
+| `MATCH_STATS_TOKEN` | A LANCommander access token with the **Report matches** scope (Profile → Access Tokens). It isn't written to any file | *(empty)* |
+| `MATCH_STATS_GAME_ID` | The game's id in LANCommander | *(empty)* |
+| `MATCH_STATS_SERVER_ID` | This server's id in LANCommander, if LANCommander manages it | *(empty)* |
+| `MATCH_STATS_REPORTER_NAME` | How the server is named in LANCommander | *(hostname)* |
+| `MATCH_STATS_MIN_PLAYERS` | Human players needed before a match is recorded | *(1)* |
+| `MATCH_STATS_MODE` | The mode reported. Empty lets the game module decide | *(empty)* |
+| `MATCH_STATS_RECORD_BOTS` | Record bots as players (`true`/`false`) | *(true)* |
+| `MATCH_STATS_RECORD_CHAT` | Record chat messages (`true`/`false`) | *(false)* |
+| `MATCH_STATS_ATTACH_DEMOS` | Upload SourceTV demos recorded with `tv_record` (`true`/`false`) | *(true)* |
+
+The settings are written to `cstrike/cfg/sourcemod/lancommander.cfg` as `lc_*` cvars on every start. Settings left
+empty aren't written, so they and the plugin's other `lc_*` cvars (see its README) can be set in
+`cstrike/cfg/sourcemod/sourcemod.cfg` instead. A `lancommander.cfg` you put in `Overlay/cstrike/cfg/sourcemod/` yourself
+is left alone.
+
+`sm_lc_status` on the server console or over RCON shows the match being recorded and how delivery is going. Reports
+that couldn't be delivered yet are kept in `Overlay/cstrike/addons/sourcemod/extensions/.interposer/Matches/` and sent
+once LANCommander can be reached.
+
 ## OverlayFS
 
 The container uses Linux OverlayFS to merge the base game files with your custom files:

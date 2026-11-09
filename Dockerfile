@@ -38,6 +38,35 @@ EXPOSE 27015/udp
 EXPOSE 27020/udp
 EXPOSE 80/tcp
 
+# ----------------------------
+# LANCommander match statistics (https://github.com/LANCommander/LANCommander.MatchStatistics.SourceMod)
+#   - MATCH_STATS_ENABLED: auto (on when MATCH_STATS_SERVER_URL and MATCH_STATS_TOKEN are set),
+#     true or false. When on, the SourceMod plugin is copied into <GAME_MOD>/addons/sourcemod
+#   - The MATCH_STATS_* settings become lc_* cvars in <GAME_MOD>/cfg/sourcemod/lancommander.cfg.
+#     Empty settings are left out, so they can be set in cfg/sourcemod/sourcemod.cfg instead
+# ----------------------------
+ENV MATCH_STATS_ENABLED="auto" \
+    MATCH_STATS_SERVER_URL="" \
+    MATCH_STATS_TOKEN="" \
+    MATCH_STATS_GAME_ID="" \
+    MATCH_STATS_SERVER_ID="" \
+    MATCH_STATS_REPORTER_NAME="" \
+    MATCH_STATS_MIN_PLAYERS="" \
+    MATCH_STATS_MODE="" \
+    MATCH_STATS_RECORD_BOTS="" \
+    MATCH_STATS_RECORD_CHAT="" \
+    MATCH_STATS_ATTACH_DEMOS=""
+
+ARG MATCH_STATS_VERSION=1.0.0
+ARG MATCH_STATS_SHA256=7cabe64ea1b927702667a9ec60dc87943e524d7a242b31396aebfe637933d177
+
+ADD --checksum=sha256:${MATCH_STATS_SHA256} \
+    https://github.com/LANCommander/LANCommander.MatchStatistics.SourceMod/releases/download/v${MATCH_STATS_VERSION}/LANCommander.SourceMod.MatchStatistics-v${MATCH_STATS_VERSION}.zip \
+    /tmp/match-stats.zip
+
+RUN unzip -q /tmp/match-stats.zip 'addons/*' -x 'addons/sourcemod/scripting/*' -d /opt/lancommander-stats && \
+    rm /tmp/match-stats.zip
+
 # COPY Modules/ "${BASE_MODULES}/"
 COPY Hooks/ "${BASE_HOOKS}/"
 
