@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1.7
 
-FROM lancommander/steamcmd:latest
+# Override to build against a locally built base, e.g. lancommander/steamcmd:local
+ARG BASE_IMAGE=lancommander/steamcmd:latest
+FROM ${BASE_IMAGE}
 
 # SteamCMD settings
 ENV STEAM_APP_ID="232330"
@@ -19,6 +21,8 @@ ENV HTTP_FILESERVER_FILE_PATTERN="^/(maps|materials|models|sound)/.*\.(bz2|ztmp|
 # ----------------------------
 # Dependencies
 # ----------------------------
+USER root
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
@@ -36,6 +40,8 @@ EXPOSE 80/tcp
 
 # COPY Modules/ "${BASE_MODULES}/"
 COPY Hooks/ "${BASE_HOOKS}/"
+
+USER lancommander
 
 WORKDIR /config
 ENTRYPOINT ["/usr/local/bin/entrypoint.ps1"]
